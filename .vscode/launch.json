@@ -12,8 +12,7 @@
             "program": "${workspaceFolder}/cmd/api",
             "args": [
                 "-port=4000",
-                "-env=development",
-                "-db-dsn=postgres://greenlight:pa55word@localhost/greenlight"
+                "-env=development"
             ]
         }
     ]
