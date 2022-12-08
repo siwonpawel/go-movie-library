@@ -10,7 +10,11 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/api",
-            "args": ["-port=4000", "-env=development"]
+            "args": [
+                "-port=4000",
+                "-env=development",
+                "-db-dsn=postgres://greenlight:pa55word@localhost/greenlight"
+            ]
         }
     ]
 }
