@@ -11,6 +11,7 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/siwonpawel/greenlight/internal/data"
 )
 
 const version = "1.0.0"
@@ -29,6 +30,7 @@ type config struct {
 type application struct {
 	config config
 	logger *log.Logger
+	models data.Models
 }
 
 func main() {
@@ -50,10 +52,12 @@ func main() {
 		logger.Fatal(err)
 	}
 	defer db.Close()
+	logger.Println("database connection pool established")
 
 	app := &application{
 		config: cfg,
 		logger: logger,
+		models: data.NewModels(db),
 	}
 
 	srv := &http.Server{
