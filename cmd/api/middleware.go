@@ -54,28 +54,29 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 	}()
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ip, _, err := net.SplitHostPort(r.RemoteAddr)
-		if err != nil {
-			app.serverErrorResponse(w, r, err)
-			return
-		}
 
-		var found bool
+		if app.config.limiter.enabled {
+			ip, _, err := net.SplitHostPort(r.RemoteAddr)
+			if err != nil {
+				app.serverErrorResponse(w, r, err)
+				return
+			}
 
-		mu.Lock()
-		if _, found = clients[ip]; !found {
-			clients[ip] = &limit{mu: sync.Mutex{}, rateLimiter: rate.NewLimiter(2, 4)}
-		}
-		mu.Unlock()
+			mu.Lock()
+			if _, found := clients[ip]; !found {
+				clients[ip] = &limit{mu: sync.Mutex{}, rateLimiter: rate.NewLimiter(rate.Limit(app.config.limiter.rps), app.config.limiter.burst)}
+			}
+			mu.Unlock()
 
-		currentLimit := clients[ip]
-		currentLimit.mu.Lock()
-		if !currentLimit.rateLimiter.Allow() {
+			currentLimit := clients[ip]
+			currentLimit.mu.Lock()
+			if !currentLimit.rateLimiter.Allow() {
+				currentLimit.mu.Unlock()
+				app.rateLimitExceededResponse(w, r)
+				return
+			}
 			currentLimit.mu.Unlock()
-			app.rateLimitExceededResponse(w, r)
-			return
 		}
-		currentLimit.mu.Unlock()
 
 		next.ServeHTTP(w, r)
 	})
