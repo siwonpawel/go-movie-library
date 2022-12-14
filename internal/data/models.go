@@ -3,6 +3,7 @@ package data
 import (
 	"database/sql"
 	"errors"
+	"time"
 )
 
 var (
@@ -18,6 +19,9 @@ type Models struct {
 		Update(movie *Movie) error
 		Delete(id int64) error
 	}
+	Tokens interface {
+		New(userID int64, ttl time.Duration, scope string) (*Token, error)
+	}
 	Users interface {
 		Insert(user *User) error
 	}
@@ -26,6 +30,7 @@ type Models struct {
 func NewModels(db *sql.DB) Models {
 	return Models{
 		Movies: MovieModel{DB: db},
+		Tokens: TokenModel{DB: db},
 		Users:  UserModel{DB: db},
 	}
 }
