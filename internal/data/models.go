@@ -21,9 +21,12 @@ type Models struct {
 	}
 	Tokens interface {
 		New(userID int64, ttl time.Duration, scope string) (*Token, error)
+		DeleteAllForUser(scope string, userId int64) error
 	}
 	Users interface {
 		Insert(user *User) error
+		GetForToken(tokenScope, tokenPlaintext string) (*User, error)
+		Update(user *User) error
 	}
 }
 
